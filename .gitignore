@@ -1,3 +1,17 @@
+data/
+data_output/
+data output/
+figures/
+pdfs/
+
+
+
+
+
+
+
+
+
 # History files
 .Rhistory
 .Rapp.history
