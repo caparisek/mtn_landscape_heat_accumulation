@@ -63,9 +63,9 @@ library(stringr)    #for ggplot facet_grid(labeller = stringr::str_wrap())
 #PC 
 #a_files_historic <- list.files(paste("I://Christine Parisek - Data ToshibaPC/CHELSA_1980-2018_global_MeanDailyAirTemp_MONTHLY/", sep="/")) #list files in Data directory
 #MAC-lab
-a_files_historic <- list.files(paste("/Volumes/TOSHIBA EXT/Christine Parisek - Data ToshibaPC/CHELSA_1980-2018_global_MeanDailyAirTemp_MONTHLY/", sep="/")) #list files in Data directory
+#a_files_historic <- list.files(paste("/Volumes/TOSHIBA EXT/Christine Parisek - Data ToshibaPC/CHELSA_1980-2018_global_MeanDailyAirTemp_MONTHLY/", sep="/")) #list files in Data directory
 #MAC-christine
-#a_files_historic <- list.files(paste(getwd(), "data/climate_databases/CHELSA/CHELSA_1980-2018_global_MeanDailyAirTemp_MONTHLY/", sep="/")) #list files in Data directory
+a_files_historic <- list.files(paste(getwd(), "data/climate_databases/CHELSA_1980-2018_global_MeanDailyAirTemp_MONTHLY/", sep="/")) #list files in Data directory
 
 #EITHER PC or MAC
 a_image.files_historic <- a_files_historic[grepl(".tif", a_files_historic) & grepl("tas", a_files_historic)] #get only the tas.tiff files
@@ -74,9 +74,9 @@ a_image.files_historic #check - should be seeing the file name "xxx.tif"
 #PC 
 #a_tas.raw.historic <- raster::stack(paste("I://Christine Parisek - Data ToshibaPC/CHELSA_1980-2018_global_MeanDailyAirTemp_MONTHLY//", a_image.files_historic, sep="/")) #create raster stack of images
 #MAC-lab
-a_tas.raw.historic <- raster::stack(paste("/Volumes/TOSHIBA EXT/Christine Parisek - Data ToshibaPC/CHELSA_1980-2018_global_MeanDailyAirTemp_MONTHLY//", a_image.files_historic, sep="/")) #create raster stack of images
+#a_tas.raw.historic <- raster::stack(paste("/Volumes/TOSHIBA EXT/Christine Parisek - Data ToshibaPC/CHELSA_1980-2018_global_MeanDailyAirTemp_MONTHLY//", a_image.files_historic, sep="/")) #create raster stack of images
 #MAC-christine
-#a_tas.raw.historic <- raster::stack(paste("data/climate_databases/CHELSA/CHELSA_1980-2018_global_MeanDailyAirTemp_MONTHLY/", a_image.files_historic, sep="/")) #create raster stack of images
+a_tas.raw.historic <- raster::stack(paste("data/climate_databases/CHELSA_1980-2018_global_MeanDailyAirTemp_MONTHLY/", a_image.files_historic, sep="/")) #create raster stack of images
 
 ### Explore - increases code run-time.
 #
@@ -2955,9 +2955,9 @@ rm(m_BLUEMTN_RslopeRintercept)
 #PC 
 #p_ssp370 <- list.files(paste("I://Christine Parisek - Data ToshibaPC/CHELSA_climatologies_ssp370_tas__2011-2040__2041-2070__2071-2100/", sep="/")) #list files in Data directory
 #MAC - LAB
-p_ssp370 <- list.files(paste("/Volumes/TOSHIBA EXT/Christine Parisek - Data ToshibaPC/CHELSA_climatologies_ssp370_tas__2011-2040__2041-2070__2071-2100/", sep="/")) #list files in Data directory
+#p_ssp370 <- list.files(paste("/Volumes/TOSHIBA EXT/Christine Parisek - Data ToshibaPC/CHELSA_climatologies_ssp370_tas__2011-2040__2041-2070__2071-2100/", sep="/")) #list files in Data directory
 #MAC - Christine
-##p_ssp370 <- list.files(paste("data/climate_databases/CHELSA/CHELSA_climatologies_ssp370_tas__2011-2040__2041-2070__2071-2100/", sep="/")) #list files in Data directory
+p_ssp370 <- list.files(paste("data/climate_databases/CHELSA/CHELSA_climatologies_ssp370_tas__2011-2040__2041-2070__2071-2100/", sep="/")) #list files in Data directory
 ##p_ssp370 <- list.files(paste("data/climate_databases/CHELSA/FromAirDropToshiba_CHELSA_climatologies_ssp370_tas__2011-2040__2041-2070__2071-2100/", sep="/")) #list files in Data directory
 
 
@@ -2969,9 +2969,9 @@ p_image.files.ssp370 #check
 #PC 
 #p_tas.ssp370 <- raster::stack(paste("I://Christine Parisek - Data ToshibaPC/CHELSA_climatologies_ssp370_tas__2011-2040__2041-2070__2071-2100//", p_image.files.ssp370, sep="/")) #create raster stack of images
 #MAC - LAB
-p_tas.ssp370 <- raster::stack(paste("/Volumes/TOSHIBA EXT/Christine Parisek - Data ToshibaPC/CHELSA_climatologies_ssp370_tas__2011-2040__2041-2070__2071-2100//", p_image.files.ssp370, sep="/")) #create raster stack of images
+#p_tas.ssp370 <- raster::stack(paste("/Volumes/TOSHIBA EXT/Christine Parisek - Data ToshibaPC/CHELSA_climatologies_ssp370_tas__2011-2040__2041-2070__2071-2100//", p_image.files.ssp370, sep="/")) #create raster stack of images
 #MAC - Christine
-##p_tas.ssp370 <- raster::stack(paste("data/climate_databases/CHELSA/CHELSA_climatologies_ssp370_tas__2011-2040__2041-2070__2071-2100//", p_image.files.ssp370, sep="/")) #create raster stack of images
+p_tas.ssp370 <- raster::stack(paste("data/climate_databases/CHELSA/CHELSA_climatologies_ssp370_tas__2011-2040__2041-2070__2071-2100//", p_image.files.ssp370, sep="/")) #create raster stack of images
 ##p_tas.ssp370 <- raster::stack(paste("data/climate_databases/CHELSA/FromAirDropToshiba_CHELSA_climatologies_ssp370_tas__2011-2040__2041-2070__2071-2100//", p_image.files.ssp370, sep="/")) 
 
 
