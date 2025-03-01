@@ -37,49 +37,20 @@ library(grid)       #for creating common x and y labels on plots
 library(gridExtra)  #for creating common x and y labels on plots
 library(stringr)    #for ggplot facet_grid(labeller = stringr::str_wrap())
 
-### 
-# If {lmerTest} is giving error when running models (i.e., https://stackoverflow.com/questions/77481539/error-in-initializeptr-function-cholmod-factor-ldeta-not-provided-by-pack), run this:
-#
-#library(Matrix)     #not used, but install req. to troubleshoot {lmerTest} after an update.
-#library(lme4)       #not used, but install req. to troubleshoot {lmerTest} after an update.
-#
-# If basic install of {Matrix}/{lme4} doesn't work, run the commented out installs code.
-#
-# install.packages("remotes")
-# remotes::install_github("lme4/lme4")
-# tools::package_dependencies("Matrix", which = "LinkingTo", reverse = TRUE)[[1L]]
-# install.packages("lme4", type = "source")
-# oo <- options(repos = "https://cran.r-project.org/")
-# install.packages("Matrix", dependencies = TRUE)
-# install.packages("lme4") #needs matrix
-# options(oo)
-# update.packages("lme4")
-# update.packages("Matrix")
-###
+# Note, if {lmerTest} is giving error when running models: (i.e., https://stackoverflow.com/questions/77481539/error-in-initializeptr-function-cholmod-factor-ldeta-not-provided-by-pack)
+
 
 
 
 # Read Data – Climate CHELSA – Historic Year-Month ------------------------
-#PC 
-#a_files_historic <- list.files(paste("I://Christine Parisek - Data ToshibaPC/CHELSA_1980-2018_global_MeanDailyAirTemp_MONTHLY/", sep="/")) #list files in Data directory
-#MAC-lab
-#a_files_historic <- list.files(paste("/Volumes/TOSHIBA EXT/Christine Parisek - Data ToshibaPC/CHELSA_1980-2018_global_MeanDailyAirTemp_MONTHLY/", sep="/")) #list files in Data directory
-#MAC-christine
 a_files_historic <- list.files(paste(getwd(), "data/climate_databases/CHELSA_1980-2018_global_MeanDailyAirTemp_MONTHLY/", sep="/")) #list files in Data directory
 
-#EITHER PC or MAC
 a_image.files_historic <- a_files_historic[grepl(".tif", a_files_historic) & grepl("tas", a_files_historic)] #get only the tas.tiff files
 a_image.files_historic #check - should be seeing the file name "xxx.tif"
 
-#PC 
-#a_tas.raw.historic <- raster::stack(paste("I://Christine Parisek - Data ToshibaPC/CHELSA_1980-2018_global_MeanDailyAirTemp_MONTHLY//", a_image.files_historic, sep="/")) #create raster stack of images
-#MAC-lab
-#a_tas.raw.historic <- raster::stack(paste("/Volumes/TOSHIBA EXT/Christine Parisek - Data ToshibaPC/CHELSA_1980-2018_global_MeanDailyAirTemp_MONTHLY//", a_image.files_historic, sep="/")) #create raster stack of images
-#MAC-christine
-a_tas.raw.historic <- raster::stack(paste("data/climate_databases/CHELSA_1980-2018_global_MeanDailyAirTemp_MONTHLY/", a_image.files_historic, sep="/")) #create raster stack of images
+a_tas.raw.historic <- raster::stack(paste("data/climate_databases/CHELSA_1980-2018_global_MeanDailyAirTemp_MONTHLY//", a_image.files_historic, sep="/")) #create raster stack of images
 
-### Explore - increases code run-time.
-#
+### Explore - but increases code run-time.
 #      plot(a_tas.raw.historic) # 12 plots of "prec" data; 1=Jan, 12=Dec.
 #      ?brick # {raster::brick} works on single multi-layer file
 #      ?stack # {raster::stack} works on multiple files (e.g., 1 .tif per month = 1 year)
@@ -87,18 +58,12 @@ a_tas.raw.historic <- raster::stack(paste("data/climate_databases/CHELSA_1980-20
 #      crs(a_tas.raw.historic)         
 #      extent(a_tas.raw.historic)
 #      class(a_tas.raw.historic)
-#
 ###
 
 
 
 # Read Data – NHD for Omernik mountain ranges ---------------------------------
-#PC
-#b_NHD_MTN_wdups<-st_read("I://Christine Parisek - Data ToshibaPC/PC_fromMacDataOutput_2024-01-18/NHD_mtns_omernik_state_elev.shp") #From Script01: NHD w Omernik Mtn Rng's crop
-#MAC-lab
-b_NHD_MTN_wdups<-st_read("/Volumes/TOSHIBA EXT/Christine Parisek - Data ToshibaPC/PC_fromMacDataOutput_2024-01-18/NHD_mtns_omernik_state_elev.shp")
-#MAC-christine
-#b_NHD_MTN_wdups<-sf::st_read("data output/NHD_mtns_omernik_state_elev.shp") #From Script01: NHD w Omernik Mtn Rng's crop
+b_NHD_MTN_wdups<-sf::st_read("data_output/NHD_mtns_omernik_state_elev.shp") #From Script01: NHD w Omernik Mtn Rng's crop
 
 
 
@@ -167,8 +132,8 @@ b_NHDClimate_MtnsRenamed<-b_NHD_MTN_wdups %>%
 # Remove duplicates in NHD-Omernik  ---------------------------------------------
 # NHD-Omernik file has duplicates because some ranges straddle multiple states or L3/L4 ecoregions 
 
-# Explore duplication situation:
-x <- b_NHDClimate_MtnsRenamed %>% dplyr::filter(GNIS_NA=="Lake Tahoe" & !US_L3NA=="Blue Ridge") # Dups. happen if lake straddles multiple states or ecoregions
+# Explore:
+x <- b_NHDClimate_MtnsRenamed %>% dplyr::filter(GNIS_NA=="Lake Tahoe" & !US_L3NA=="Blue Ridge")
 x1 <- x %>% dplyr::filter(STATE_N=="California" & L4_KEY=="5c  Northern Sierra Upper Montane Forests") 
 x2 <- x %>% dplyr::filter(STATE_N=="California" & L4_KEY=="5f  Northeastern Sierra Mixed Conifer-Pine Forests") 
 x3 <- x %>% dplyr::filter(STATE_N=="Nevada"     & L4_KEY=="5f  Northeastern Sierra Mixed Conifer-Pine Forests") 
@@ -192,7 +157,7 @@ leaflet(data = x3) %>%
   addPolygons()
 
 # Remove duplicates 
-c_NHD_MTN_unique <- b_NHDClimate_MtnsRenamed[!duplicated(b_NHDClimate_MtnsRenamed$COMID),] # quick and dirty removal
+c_NHD_MTN_unique <- b_NHDClimate_MtnsRenamed[!duplicated(b_NHDClimate_MtnsRenamed$COMID),]
 
 
 
@@ -265,7 +230,7 @@ e_data_dated<-e_historic_data_longways %>%
   dplyr::mutate(t2 = str_replace(t1, pattern = "_", replacement = "-01-")) %>%  #find+replace
   dplyr::filter(!t0=="1979" ) #remove 1979; incomplete year
 
-x <- e_data_dated %>%  # Prior to filtering out 1979, this check step showed January is missing from 1979.
+x <- e_data_dated %>%
   group_by(t0) %>% 
   tally() %>% 
   ungroup()
@@ -398,6 +363,9 @@ fBasics::basicStats(g_NHDClimateMonthYear_MeanLogTempC$MeanTempC_log10_xplus10)
 #fBasics::basicStats(g_NHDClimateMonthYear_MeanLogTempC$MeanTempC_log10_1)
 #fBasics::basicStats(g_NHDClimateMonthYear_MeanLogTempC$MeanTempC_lnx1)
 
+
+
+
 # ~ Each range gets its own DF   -------------------------------------------
 h_KLAMATH<-g_NHDClimateMonthYear_MeanLogTempC %>% 
   dplyr::filter(MtnRange_SIMPLE == "Klamath Mountains")
@@ -428,6 +396,7 @@ h_AZNM<-g_NHDClimateMonthYear_MeanLogTempC %>%
 
 h_WASATCH<-g_NHDClimateMonthYear_MeanLogTempC %>% 
   dplyr::filter(MtnRange_SIMPLE == "Wasatch-Uinta Mountains")
+
 
 
 
@@ -528,6 +497,8 @@ h_WASATCH %>%
   ggtitle("h_WASATCH's distribution of TempC (nonlog)")+
   theme_classic()+
   scale_y_continuous(labels = scales::comma_format())
+
+
 
 
 
@@ -1929,6 +1900,8 @@ m_KLAMATH_coef <- coef(m_KLAMATH_RslopeRintercept)$COMID %>%
 # * both manual- and predict- method deviate at this spot. 
 
 
+
+
 # .------ manual method ---------------------------------------------------
 
 # Create a sequence of years from 1979 to 2019
@@ -2952,27 +2925,12 @@ rm(m_BLUEMTN_RslopeRintercept)
  
 
 # .--- Read Data - ssp370 ------------------------------------------------------
-#PC 
-#p_ssp370 <- list.files(paste("I://Christine Parisek - Data ToshibaPC/CHELSA_climatologies_ssp370_tas__2011-2040__2041-2070__2071-2100/", sep="/")) #list files in Data directory
-#MAC - LAB
-#p_ssp370 <- list.files(paste("/Volumes/TOSHIBA EXT/Christine Parisek - Data ToshibaPC/CHELSA_climatologies_ssp370_tas__2011-2040__2041-2070__2071-2100/", sep="/")) #list files in Data directory
-#MAC - Christine
-p_ssp370 <- list.files(paste("data/climate_databases/CHELSA/CHELSA_climatologies_ssp370_tas__2011-2040__2041-2070__2071-2100/", sep="/")) #list files in Data directory
-##p_ssp370 <- list.files(paste("data/climate_databases/CHELSA/FromAirDropToshiba_CHELSA_climatologies_ssp370_tas__2011-2040__2041-2070__2071-2100/", sep="/")) #list files in Data directory
+p_ssp370 <- list.files(paste("data/climate_databases/CHELSA_climatologies_ssp370_tas__2011-2040__2041-2070__2071-2100/", sep="/")) #list files in Data directory
 
-
-#EITHER PC or MAC
 p_image.files.ssp370 <- p_ssp370[grepl(".tif", p_ssp370) & grepl("tas", p_ssp370)] #get only the tas.tiff files
 p_image.files.ssp370 #check
 
-
-#PC 
-#p_tas.ssp370 <- raster::stack(paste("I://Christine Parisek - Data ToshibaPC/CHELSA_climatologies_ssp370_tas__2011-2040__2041-2070__2071-2100//", p_image.files.ssp370, sep="/")) #create raster stack of images
-#MAC - LAB
-#p_tas.ssp370 <- raster::stack(paste("/Volumes/TOSHIBA EXT/Christine Parisek - Data ToshibaPC/CHELSA_climatologies_ssp370_tas__2011-2040__2041-2070__2071-2100//", p_image.files.ssp370, sep="/")) #create raster stack of images
-#MAC - Christine
-p_tas.ssp370 <- raster::stack(paste("data/climate_databases/CHELSA/CHELSA_climatologies_ssp370_tas__2011-2040__2041-2070__2071-2100//", p_image.files.ssp370, sep="/")) #create raster stack of images
-##p_tas.ssp370 <- raster::stack(paste("data/climate_databases/CHELSA/FromAirDropToshiba_CHELSA_climatologies_ssp370_tas__2011-2040__2041-2070__2071-2100//", p_image.files.ssp370, sep="/")) 
+p_tas.ssp370 <- raster::stack(paste("data/climate_databases/CHELSA_climatologies_ssp370_tas__2011-2040__2041-2070__2071-2100/", p_image.files.ssp370, sep="/")) #create raster stack of images
 
 
 
@@ -3630,7 +3588,7 @@ x_plot_kddelev <- q_kddgddSUM_forssp %>%
     axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1),
     axis.title = element_text(size = 15))
 
-# Fig UNKNOWN -------------------------------------------------------------
+# Fig x -------------------------------------------------------------
 ggsave(plot = x_plot_kddelev, "figures/12.19.2024 - Elevation ~ SumKDD90 PROJECTED - SumKDD90==0 is removed --log1p.jpeg",height = 5, width = 13, dpi = 300)
 
 
@@ -5672,14 +5630,7 @@ r_MtnSlopeAttribs_ssp370 <- r_NHD_LMER_spatial_ssp370_NONSPATIAL # No apparent o
 # .--- Mean GDD and distinct COMID ---------------------------------------------
 
 # Link "MEAN GDD" calc from pre-model data to Lake-Int-Slope
-
-###
 ### Use the split up version of "q_kddgddSUM_forssp"; which was the df right before model. 
-### 
-### q_2040_ssp_Sum_GDD_0           <- q_kddgddSUM_forssp %>% dplyr::filter(Year == 2040)
-### q_2070_2040_ssp_Sum_GDD_0      <- q_kddgddSUM_forssp %>% dplyr::filter(!Year == 2100)
-### q_2100_2070_2040_ssp_Sum_GDD_0 <- q_kddgddSUM_forssp
-### 
 
 colnames(q_kddgddSUM_forssp)
 unique(q_2040_ssp_Sum_GDD_0$Year)
@@ -5814,7 +5765,7 @@ plots_slopeelev_projected<-cowplot::plot_grid(r_Plot_slopeelev_2040,
                                r_Plot_slopeelev_2070,
                                r_Plot_slopeelev_2100, 
                                nrow=3)
-# Fig UNKNOWN
+# Fig x
 ggsave(plot = plots_slopeelev_projected, "figures/12.19.2024 - GDD0 REslope ~ Elevation - ssp370.jpeg", height = 5, width = 16, dpi = 300)
 
 
@@ -5847,12 +5798,6 @@ o_Cluster_LogScale<-n_Means_with_LakeIntSlope %>%
                 Log1p_MeanGDD            = log1p(Mean_GDD),
                 Log1p_Elev               = log1p(elevatn),
                 Log10_TempC_MeanDistinct = log10( 10 + TempC_DistinctMeanFor_Mean))
-
-# SCALE (cut)
-#o_Cluster_LogScale$LogScaleSLOPE   <- scale(o_Cluster_LogScale$Log1p_Slope)
-#o_Cluster_LogScale$LogScaleMEANGDD <- scale(o_Cluster_LogScale$Log1p_MeanGDD)
-#o_Cluster_LogScale$LogScaleELEV    <- scale(o_Cluster_LogScale$Log1p_Elev)
-#o_Cluster_LogScale$LogScaled_TempC_DistinctMeanFor_Mean    <- scale(o_Cluster_LogScale$Log10_TempC_MeanDistinct)
 
 o_clustered_data_list <- list()# Initialize an empty list to store clustered data
 

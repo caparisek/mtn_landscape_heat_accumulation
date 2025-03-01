@@ -19,7 +19,7 @@ library(utils)      #for the read.table and for loop read-in
 
 # CHELSA_monthly_tas_1980-2019 --------------------------------------------
 ##  Monthly Historic = 1979-2019; one .tiff per month
-##  NOT the file downloaded from the "climatologies" section. 
+##  (Not the file downloaded from the "climatologies" section)
 
 # 1. List of urls of files to download (filelist)
 filelist <- utils::read.table("data/climate_databases/CHELSA_1980-2018_global_MeanDailyAirTemp_MONTHLY/envidatS3paths_CHELSA_1980-2018_V2_Global_Monthly_MeanDailyAirTemp.txt") 
