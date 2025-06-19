@@ -287,6 +287,8 @@ mapview(PacificNorthwest,
 # EPA ecoregions - https://www.epa.gov/eco-research/level-iii-and-iv-ecoregions-continental-united-states 
 OmernickEcoregion <- sf::st_read("data/mtn_region_databases/EPA_ecoregion_Level4_Omernik/us_eco_l4.shp")
 
+
+
 class(OmernickEcoregion) #sf
 st_crs(OmernickEcoregion)
 
@@ -342,7 +344,7 @@ renamed_mtn<-mountain_ecoregion %>%
     NA_L3NAME=="Blue Mountains"               ~ "Blue Mountains",
     NA_L3NAME=="Idaho Batholith"              ~ "Idaho Batholith",
     NA_L3NAME=="Blue Ridge"                   ~ "Blue Ridge",
-    NA_L3NAME=="Arizona/New Mexico Mountains" ~ "AZ/NM Mountains",
+    NA_L3NAME=="Arizona/New Mexico Mountains" ~ "Arizona-New Mexico",
     NA_L3NAME=="Wasatch and Uinta Mountains"  ~ "Wasatch-Uinta")) %>% 
   #Complex Name 
   mutate(MountainName_complex= case_when(
@@ -387,6 +389,59 @@ class(renamed_mtn)
 
 
 
+
+# Fig - Map of mtn regions ------------------------------------------------
+
+# Get USA states boundaries
+x_map_states <- USAboundaries::us_states()
+
+# Keep contiguous USA
+x_map_NAM <- x_map_states %>% dplyr::filter(!state_name %in% c("Alaska", "Hawaii", "Puerto Rico", "Guam", "American Samoa", "Northern Mariana Islands", "U.S. Virgin Islands"))
+
+# Map
+ggplot()+
+  geom_sf(data=x_map_NAM, fill="white", color = "black")+
+  geom_sf(data=renamed_mtn, aes(fill=MountainName),color=NA)+
+  scale_fill_viridis_d(name = "Mountain Ranges")+
+  theme_bw()+
+  theme(#axis.ticks.y = element_blank(), 
+        #axis.ticks.x = element_blank(), 
+        #axis.text.x=element_blank(), 
+        #axis.text.y=element_blank(), 
+        #axis.title.x=element_blank(), 
+        #axis.title.y=element_blank(), 
+        panel.grid.major=element_blank(), 
+        panel.grid.minor=element_blank(),
+        #plot.margin = margin(t = 0, r = 0, b = 1.1, l = 0,  "cm"),
+        panel.border = element_rect(colour = "white", linewidth=0.4))+
+  annotation_scale(location = "bl",
+                   style = "ticks",
+                   line_width = 0.5,
+                   height = unit(0.1, "cm"),
+                   tick_height = 0.4, 
+                   text_cex = 0.8)+
+  annotation_north_arrow(width = unit(.30,"in"),
+                         height = unit (.49, "in"),
+                         #pad_y = unit(.3, "in"),
+                         location = "br", 
+                         which_north = "true",
+                         style = north_arrow_minimal)
+
+# --Fig S8 ----------------------------------------------------------------
+ggsave("figures/Fig_S08 - map of mountain regions.jpeg",  height = 4, width = 8,  dpi = 300)
+
+
+
+
+
+
+
+
+
+
+
+
+
 # ~ -----------------------------------------------------------------------
 # crop – NHD to MTN range -------------------------------------------------
 
@@ -419,10 +474,5 @@ elev_NHD2 <- elevatr::get_elev_point(NHD_LakePond, prj = ll_prj, src = "epqs")
 # save – NID + Omernik Mtns -------------------------------------------------
 write_csv(elev_NHD2,"data output/NHD_mtns_omernik_state_elev.csv")
 st_write(elev_NHD2,"data output/NHD_mtns_omernik_state_elev.shp", append=FALSE) 
-
-
-
-
-
 
 
