@@ -50,6 +50,7 @@ a_image.files_historic #check - should be seeing the file name "xxx.tif"
 
 a_tas.raw.historic <- raster::stack(paste("data/climate_databases/CHELSA_1980-2018_global_MeanDailyAirTemp_MONTHLY//", a_image.files_historic, sep="/")) #create raster stack of images
 
+
 ### Explore - but increases code run-time.
 #      plot(a_tas.raw.historic) # 12 plots of "prec" data; 1=Jan, 12=Dec.
 #      ?brick # {raster::brick} works on single multi-layer file
@@ -64,7 +65,6 @@ a_tas.raw.historic <- raster::stack(paste("data/climate_databases/CHELSA_1980-20
 
 # Read Data – NHD for Omernik mountain ranges ---------------------------------
 b_NHD_MTN_wdups<-sf::st_read("data_output/NHD_mtns_omernik_state_elev.shp") #From Script01: NHD w Omernik Mtn Rng's crop
-
 
 
 
@@ -160,6 +160,26 @@ leaflet(data = x3) %>%
 c_NHD_MTN_unique <- b_NHDClimate_MtnsRenamed[!duplicated(b_NHDClimate_MtnsRenamed$COMID),]
 
 
+
+
+# Fig - Map of mtn regions ------------------------------------------------
+colnames(c_NHD_MTN_unique)
+x_map_states <- USAboundaries::us_states()
+unique(x_map_states)
+
+x_map_NAM <- x_map_states %>% 
+  dplyr::filter(!state_name %in% c("Alaska", "Hawaii", "Puerto Rico", "Guam", "American Samoa", "Northern Mariana Islands", "U.S. Virgin Islands"))
+
+x_map_NAM <- x_map_states %>% 
+  dplyr::filter(state_name %in% c("California"))
+
+x_temp_CA<- x %>% 
+  dplyr::filter(STATE_N == "California")
+ggplot()+
+  geom_sf(data=x_map_NAM, fill="white", color = "gray90")+
+  geom_sf(data=x_temp_CA, aes(fill=MtnRange_SIMPLE),color=NA)+
+  scale_fill_viridis_d(name = "Mountain Ranges")+
+  theme_minimal()
 
 
 
@@ -362,6 +382,9 @@ fBasics::basicStats(g_NHDClimateMonthYear_MeanLogTempC$MeanTempC)
 fBasics::basicStats(g_NHDClimateMonthYear_MeanLogTempC$MeanTempC_log10_xplus10)
 #fBasics::basicStats(g_NHDClimateMonthYear_MeanLogTempC$MeanTempC_log10_1)
 #fBasics::basicStats(g_NHDClimateMonthYear_MeanLogTempC$MeanTempC_lnx1)
+
+
+
 
 
 
@@ -1495,7 +1518,7 @@ m_historic_quantiles <- g_NHDClimate_MonthYear %>%
                    quant95 = quantile(Temp_C, probs = q[8])) %>% 
   ungroup()
 
-#write_csv(m_historic_quantiles, "data_output/Historic_Quantile_Per_MountainRange.csv")
+write_csv(m_historic_quantiles, "data_output/Historic_Quantile_Per_MountainRange.csv")
 
 
 
@@ -1634,7 +1657,6 @@ range(m_kddgdd_summarized$Log1p_SumGDD)
 x<- m_kddgdd_summarized %>% group_by(COMID) %>% tally() %>% ungroup() # SumGDD is "per unique lake-year combinations"
 
 x_plot_gddelev<-m_kddgdd_summarized %>% 
-  #dplyr::filter(!Sum_GDD_0==0) %>% 
   ggplot()+
   geom_point(aes(x=Sum_GDD_0, y=elevatn), alpha=0.2, color = "navy")+
   scale_y_continuous(labels = scales::comma_format(),breaks = seq(0,4000,1000), limits=c(0,4000))+
@@ -1646,8 +1668,7 @@ x_plot_gddelev<-m_kddgdd_summarized %>%
   theme(strip.background = element_rect(fill=NA, color=NA),
         legend.position  = "none")
 
-m_kddgdd_summarized_forplotting<-m_kddgdd_summarized %>% 
-  dplyr::filter(!Sum_KDD_90Perc==0)
+m_kddgdd_summarized_forplotting<-m_kddgdd_summarized 
 
 x_plot_kddelev<-m_kddgdd_summarized_forplotting %>% 
   #dplyr::filter(!Sum_KDD_90Perc==0) %>% 
@@ -1665,7 +1686,7 @@ x_plot_kddelev<-m_kddgdd_summarized_forplotting %>%
 x_plot_gddkdd_byelev <- cowplot::plot_grid(x_plot_gddelev,x_plot_kddelev,ncol=1)
 
 # Fig S2 ------------------------------------------------------------------
-ggsave(plot = x_plot_gddkdd_byelev, "figures/12.19.2024 - Elev ~ SumGDD0 and SumKDD90 - with SumkDD0==0 removed.jpeg", height = 8, width = 9, dpi = 300)
+ggsave(plot = x_plot_gddkdd_byelev, "figures/Figure S2 now includes KDD zeros - 06.17.2025 - Elev ~ SumGDD0 and SumKDD90 - with SumkDD0==0 removed.jpeg", height = 8, width = 9, dpi = 300)
 
 
 
@@ -2706,6 +2727,16 @@ n_Means_with_LakeIntSlope <- left_join(n_unique_LakeSlopeInt_noYear,m_MEANgdd, b
 x<-n_Means_with_LakeIntSlope %>% dplyr::filter(COMID=="3800743")
 
 
+### Is there a latitude effect? Yes.
+# plot(n_Means_with_LakeIntSlope$latitude,n_Means_with_LakeIntSlope$Mean_GDD)
+# n_Means_with_LakeIntSlope %>% 
+#   ggplot(aes(x=latitude, y=Mean_GDD))+
+#   geom_point()+
+#   geom_smooth(method="lm", se=TRUE, color="blue")+
+#   theme_minimal()
+# model <- lm(Mean_GDD ~ latitude, data = n_Means_with_LakeIntSlope)
+# summary(model)
+# cor.test(n_Means_with_LakeIntSlope$latitude,n_Means_with_LakeIntSlope$Mean_GDD)
 
 
 
@@ -2819,6 +2850,38 @@ n_PearsonRs_GDD_ann <- data.frame(MtnRange_SIMPLE = c("Appalachians" ,
                                      x=Inf, 
                                      y=Inf)
 
+
+n_N_of_Lakes_for_Fig_2_and_3 <- c("10,467", #Appalachians
+                                  "1,033",  #AZ-NM Mountains
+                                  "284",   #Blue Mountains            
+                                  "464",   #Blue Ridge                
+                                  "2,165",  #Cascades                 
+                                  "1,035",  #Idaho Batholith          
+                                  "245",   #Klamath Mountains         
+                                  "9,661",  #Rockies                  
+                                  "2,358",  #Sierra Nevada
+                                  "988")   #Wasatch-Uinta Mountains
+
+n_N_of_Lakes_for_Fig_2_and_3_ann <- data.frame(MtnRange_SIMPLE = c("Appalachians" ,
+                                                      "AZ-NM Mountains",
+                                                      "Blue Mountains",
+                                                      "Blue Ridge",
+                                                      "Cascades",
+                                                      "Idaho Batholith",
+                                                      "Klamath Mountains",
+                                                      "Rockies",              
+                                                      "Sierra Nevada",      
+                                                      "Wasatch-Uinta Mountains"), 
+                                  label = paste("n =", n_N_of_Lakes_for_Fig_2_and_3),
+                                  x=Inf, 
+                                  y=Inf)
+
+
+
+
+
+
+
 n_Means_with_LakeIntSlope %>%
   ggplot()+
   geom_point( aes(x=Slope, y=elevatn), alpha=0.1, color="navy")+
@@ -2829,6 +2892,10 @@ n_Means_with_LakeIntSlope %>%
              aes(x=x, y=y, label=label),
              inherit.aes = FALSE,
              hjust=1, vjust=1, size=4, fill=NA, color="black", label.size=0)+
+  geom_label(data=n_N_of_Lakes_for_Fig_2_and_3_ann, 
+             aes(x=x, y=y, label=label),
+             inherit.aes = FALSE,
+             hjust=1, vjust=1.8, size=4, fill=NA, color="black", label.size=0)+
   theme_bw()+
   theme(strip.background = element_blank(),
         axis.text.x = element_text(angle = 45, vjust = 1, hjust=1),
@@ -2836,6 +2903,15 @@ n_Means_with_LakeIntSlope %>%
         strip.text = element_text(size=13),
         panel.grid.minor = element_blank())+
   ylab(label = "Elevation (m)")
+
+x <- n_Means_with_LakeIntSlope %>% 
+  group_by(MtnRange_SIMPLE) %>% 
+  tally() %>% 
+  ungroup()
+
+x
+
+
 
 # Fig 3 -------------------------------------------------------------------
 ggsave("figures/12.19.2024 - GDD0 RE Slope ~ Elevation.jpeg", height = 5, width = 12, dpi = 300)
@@ -2854,6 +2930,10 @@ n_Means_with_LakeIntSlope %>%
         #panel.grid.major = element_blank(),
         panel.grid.minor = element_blank())+
   ylab(label = "Velocity of Change")
+
+### 1-way anova: Is there a sig diff bw slopes of the 10 ranges? Yes. 
+# aov <- aov(Slope ~ MtnRange_SIMPLE, data=n_Means_with_LakeIntSlope)
+# summary(aov)
 
 # Fig 4 -------------------------------------------------------------------
 ggsave("figures/12.19.2024 - GDD0 RE Slope ~ Boxplot Range.jpeg", height = 10, width = 10, dpi = 300)
@@ -2931,7 +3011,6 @@ p_image.files.ssp370 <- p_ssp370[grepl(".tif", p_ssp370) & grepl("tas", p_ssp370
 p_image.files.ssp370 #check
 
 p_tas.ssp370 <- raster::stack(paste("data/climate_databases/CHELSA_climatologies_ssp370_tas__2011-2040__2041-2070__2071-2100/", p_image.files.ssp370, sep="/")) #create raster stack of images
-
 
 
 
@@ -3524,7 +3603,7 @@ x_b<-q_kddgddSUM_forssp      %>% dplyr::filter(COMID=="3800743") # Check this is
 # .---* Florida plot ----------------------------------------------------------
 
 x_plot_kddelev<-q_kddgddSUM_forssp %>% 
-  dplyr::filter(!Sum_KDD_90Perc==0) %>% 
+  #dplyr::filter(!Sum_KDD_90Perc==0) %>% 
   ggplot()+
   geom_point(aes(x=((Sum_KDD_90Perc)), y=elevatn, color=factor(Year)), alpha=0.2)+
   scale_colour_manual(values = c("slategray4", "slategray3","slategray2" ))+
@@ -3540,7 +3619,7 @@ x_plot_kddelev<-q_kddgddSUM_forssp %>%
         axis.title = element_text(size=15))
 
 x_plot_kddelev <- q_kddgddSUM_forssp %>%
-  dplyr::filter(!Sum_KDD_90Perc == 0) %>%
+  #dplyr::filter(!Sum_KDD_90Perc == 0) %>%
   ggplot() +
   geom_point(aes(x = Sum_KDD_90Perc, y = elevatn, color = factor(Year)), alpha = 0.2) +
   scale_colour_manual(values = c("slategray4", "slategray3", "slategray2")) +
@@ -3565,7 +3644,7 @@ x_plot_kddelev <- q_kddgddSUM_forssp %>%
 
 
 x_plot_kddelev <- q_kddgddSUM_forssp %>%
-  dplyr::filter(!Sum_KDD_90Perc == 0) %>%
+  #dplyr::filter(!Sum_KDD_90Perc == 0) %>%
   ggplot() +
   geom_point(aes(x = Sum_KDD_90Perc, y = elevatn, color = factor(Year)), alpha = 0.2) +
   scale_colour_manual(values = c("slategray4", "slategray3", "slategray2")) +
@@ -3589,7 +3668,7 @@ x_plot_kddelev <- q_kddgddSUM_forssp %>%
     axis.title = element_text(size = 15))
 
 # Fig x -------------------------------------------------------------
-ggsave(plot = x_plot_kddelev, "figures/12.19.2024 - Elevation ~ SumKDD90 PROJECTED - SumKDD90==0 is removed --log1p.jpeg",height = 5, width = 13, dpi = 300)
+ggsave(plot = x_plot_kddelev, "figures/Fig S3 now includes KDD zeros - 06.17.2025 - Elevation ~ SumKDD90 PROJECTED - SumKDD90==0 is removed --log1p.jpeg",height = 5, width = 13, dpi = 300)
 
 
 
@@ -6909,6 +6988,19 @@ write_csv(v_percentchange_all, "data_output/Percent_Change_Difference_2024-06-26
 mapdata_projected <- s_MeanGDD_with_LakeIntSlope_2100_2070_2040 %>% 
   dplyr::filter(!is.na(latitude))
 
+fBasics::basicStats(mapdata_projected$Mean_KDD_2040)
+fBasics::basicStats(mapdata_projected$Mean_KDD_2070_2040)
+fBasics::basicStats(mapdata_projected$Mean_KDD_2100_2070_2040)
+
+fBasics::basicStats(mapdata_projected$Mean_GDD_2040)
+fBasics::basicStats(mapdata_projected$Mean_GDD_2070_2040)
+fBasics::basicStats(mapdata_projected$Mean_GDD_2100_2070_2040)
+
+x<- mapdata_projected %>% 
+  dplyr::filter(Mean_KDD_2040>1500)
+unique(x$US_L3NA)
+
+
 fBasics::basicStats(o_recoded$Mean_GDD)
 fBasics::basicStats(mapdata_projected$Mean_GDD_2040)
 fBasics::basicStats(mapdata_projected$Mean_GDD_2070_2040)
@@ -6952,7 +7044,8 @@ usa$lat <- res_albers@coords[,2]
 colnames(mapdata_projected_POINTS)
 
 size <- 2
-alpha <- 0.1
+alpha <- 0.02 # For manuscript figure readability
+alpha <- 0.5 # For thumbnail TOC Graphic Art
 shape <- 16
 
 plotmap_GDD_projected1 <- ggplot()+
@@ -6978,8 +7071,11 @@ plotmap_GDD_projected1 <- ggplot()+
         panel.grid = element_blank())
 
 
+ggsave(plot = plotmap_GDD_projected1, "figures/06.18.2025 - TOC Graphic Art.tiff", height = 1.5, width = 3, units="in", dpi = 900)
 
-plotmap_GDD_projected2 <- ggplot()+
+
+
++plotmap_GDD_projected2 <- ggplot()+
   geom_polygon(data= state, aes(x=long, y=lat, group=group),fill="white", color="gray90")+
   geom_polygon(data= usa,   aes(x=long, y=lat, group=group),fill=NA,      color="black")+
   coord_fixed(1.1)+
@@ -7263,7 +7359,7 @@ plots_all_with_legend <- plot_grid(x_gdd_legend,
                                    x_kdd_legend,
                                    ncol=3, rel_widths = c(0.7,4,0.65))
 
-ggsave(plot = plots_all_with_legend, "figures/2.19.2025 - Map.jpeg", height = 10, width = 8, units="in", dpi = 300)
+ggsave(plot = plots_all_with_legend, "figures/06.17.2025 - Map.jpeg", height = 10, width = 8, units="in", dpi = 300)
 
 
 # . ~ . ~ . ~ . ~ . ~ . ~ . ~ . ~ . ~ -------------------------------------
